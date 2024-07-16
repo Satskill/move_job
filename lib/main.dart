@@ -1,20 +1,99 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-void main() {
-  runApp(const MainApp());
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
+import 'package:move_job/Data/Database.dart';
+import 'package:move_job/Data/LocalDatabase.dart';
+import 'package:move_job/Data/UserState.dart';
+import 'package:move_job/Routes/Routes.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  HttpOverrides.global = MyHttpOverrides();
+
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  runApp(const ProviderScope(child: MainApp()));
+
+  await Hive.openBox('User');
+
+  userState = userState.copyWith(user: await LocalDatabase().userGetInfos());
 }
+
+late double screenHeight;
+late double screenWidth;
+
+UserState userState = UserState();
+
+late Map? userInfo;
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
+
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      onGenerateRoute: Routes.routes,
+      home: GestureDetector(
+          onTap: () {
+            FocusScopeNode currentFocus = FocusScope.of(context);
+
+            if (!currentFocus.hasPrimaryFocus) {
+              currentFocus.unfocus();
+              FocusScope.of(context).requestFocus(FocusNode());
+            }
+          },
+          child: const Home()),
+    );
+  }
+}
+
+final activityProvider = Database().login();
+
+class Home extends ConsumerWidget {
+  const Home({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      body: Center(
+        child: Consumer(
+          builder: (context, ref, _) {
+            final userState = ref.watch(userProvider);
+
+            return Scaffold(
+              body: Center(
+                child: userState.isLoading
+                    ? const CircularProgressIndicator()
+                    : userState.user != null
+                        ? Text('User is logged in: ${userState.user}')
+                        : Text('User is not logged in'),
+              ),
+            );
+          },
         ),
       ),
     );
+  }
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }

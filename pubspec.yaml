@@ -1,17 +1,20 @@
 name: move_job
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
-  sdk: '>=3.4.3 <4.0.0'
+  sdk: ">=3.4.3 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   flutter_map: ^7.0.2
+  flutter_riverpod: ^2.5.1
   geolocator: ^12.0.0
-  riverpod: ^2.5.1
+  google_fonts: ^6.2.1
+  hive: ^2.2.3
+  http: ^1.2.1
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:move_job/Data/Variables.dart';
 import 'package:move_job/main.dart';
@@ -230,3 +231,16 @@ class CustomTextFields {
     );
   }
 }
+
+class FocusStateNotifier extends StateNotifier<bool> {
+  FocusStateNotifier() : super(false);
+
+  void updateFocus(bool isFocused) {
+    state = isFocused;
+  }
+}
+
+final focusStateProvider =
+    StateNotifierProvider<FocusStateNotifier, bool>((ref) {
+  return FocusStateNotifier();
+});

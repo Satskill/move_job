@@ -6,6 +6,10 @@ import 'dart:convert';
 
 import 'package:move_job/Data/LocalDatabase.dart';
 
+final userProvider = StateNotifierProvider<UserNotifier, UserState>((ref) {
+  return UserNotifier();
+});
+
 class UserState {
   final Map? user;
   final bool isLoading;
@@ -55,9 +59,11 @@ class UserNotifier extends StateNotifier<UserState> {
         },
       );
 
+      log(response.body);
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        state = state.copyWith(user: data['user'], isLoading: false);
+        final data = jsonDecode(response.body)['data'];
+        state = state.copyWith(user: data, isLoading: false);
       } else {
         state = state.copyWith(error: 'Login failed', isLoading: false);
       }
@@ -71,7 +77,7 @@ class UserNotifier extends StateNotifier<UserState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await http.post(
-        Uri.parse('https://movejobapp-359e2f13a5e7.herokuapp.com/login'),
+        Uri.parse('https://movejobapp-359e2f13a5e7.herokuapp.com/register'),
         body: {
           'email': email,
           'password': password,
@@ -81,9 +87,11 @@ class UserNotifier extends StateNotifier<UserState> {
         },
       );
 
+      log(response.body);
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        state = state.copyWith(user: data['user'], isLoading: false);
+        final data = jsonDecode(response.body)['user'];
+        state = state.copyWith(user: data, isLoading: false);
       } else {
         state = state.copyWith(error: 'Login failed', isLoading: false);
       }
@@ -96,7 +104,3 @@ class UserNotifier extends StateNotifier<UserState> {
     state = UserState();
   }
 }
-
-final userProvider = StateNotifierProvider<UserNotifier, UserState>((ref) {
-  return UserNotifier();
-});

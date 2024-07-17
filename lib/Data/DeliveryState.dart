@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -59,10 +57,10 @@ class DeliveryNotifier extends StateNotifier<DeliveryState> {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         state = state.copyWith(user: data['user'], isLoading: false);
       } else {
-        state = state.copyWith(error: 'Login failed', isLoading: false);
+        state = state.copyWith(error: 'Database Error', isLoading: false);
       }
     } catch (e) {
-      state = state.copyWith(error: 'Connection failed', isLoading: false);
+      state = state.copyWith(error: 'Connection Failed', isLoading: false);
     }
   }
 
@@ -85,10 +83,10 @@ class DeliveryNotifier extends StateNotifier<DeliveryState> {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         state = state.copyWith(user: data['user'], isLoading: false);
       } else {
-        state = state.copyWith(error: 'Login failed', isLoading: false);
+        state = state.copyWith(error: 'Database Error', isLoading: false);
       }
     } catch (e) {
-      state = state.copyWith(error: 'Connection failed', isLoading: false);
+      state = state.copyWith(error: 'Connection Failed ', isLoading: false);
     }
   }
 

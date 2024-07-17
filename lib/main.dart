@@ -6,8 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:move_job/Data/Database.dart';
 import 'package:move_job/Data/LocalDatabase.dart';
+import 'package:move_job/Data/LocationFetch.dart';
 import 'package:move_job/Data/UserState.dart';
 import 'package:move_job/Routes/Routes.dart';
+import 'package:move_job/Widgets/AuthWidgets/AuthPage.dart';
+import 'package:move_job/Widgets/MainWidgets/MainPage.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:workmanager/workmanager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,11 +26,23 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(const ProviderScope(child: MainApp()));
+  Workmanager().initialize(
+    callbackDispatcher,
+    isInDebugMode: true,
+  );
+  Workmanager().registerPeriodicTask(
+    "1",
+    "locationTask",
+    frequency: Duration(minutes: 15),
+  );
+
+  Hive.init((await getApplicationDocumentsDirectory()).path);
 
   await Hive.openBox('User');
 
   userState = userState.copyWith(user: await LocalDatabase().userGetInfos());
+
+  runApp(const ProviderScope(child: MainApp()));
 }
 
 late double screenHeight;
@@ -75,11 +92,7 @@ class Home extends ConsumerWidget {
 
             return Scaffold(
               body: Center(
-                child: userState.isLoading
-                    ? const CircularProgressIndicator()
-                    : userState.user != null
-                        ? Text('User is logged in: ${userState.user}')
-                        : Text('User is not logged in'),
+                child: userState.user != null ? MainPage() : MainPage(),
               ),
             );
           },

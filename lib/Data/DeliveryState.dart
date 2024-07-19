@@ -1,27 +1,27 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:move_job/Data/LocalDatabase.dart';
-
 class DeliveryState {
-  final Map? user;
+  final List? data;
   final bool isLoading;
   final String? error;
 
   DeliveryState({
-    this.user,
+    this.data,
     this.isLoading = false,
     this.error,
   });
 
   DeliveryState copyWith({
-    Map? user,
+    List? data,
     bool? isLoading,
     String? error,
   }) {
     return DeliveryState(
-      user: user ?? this.user,
+      data: data ?? this.data,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
     );
@@ -29,33 +29,20 @@ class DeliveryState {
 }
 
 class DeliveryNotifier extends StateNotifier<DeliveryState> {
-  DeliveryNotifier() : super(DeliveryState(isLoading: true)) {
-    loadUser();
-  }
+  DeliveryNotifier() : super(DeliveryState(isLoading: true));
 
-  Future<void> loadUser() async {
-    try {
-      var user = await LocalDatabase().userGetInfos();
-      state = state.copyWith(user: user, isLoading: false);
-    } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
-    }
-  }
-
-  Future<void> login(String email, String password) async {
+  Future<void> allDeliveries() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final response = await http.post(
-        Uri.parse('https://movejobapp-359e2f13a5e7.herokuapp.com/login'),
-        body: {
-          'email': email,
-          'password': password,
-        },
+      final response = await http.get(
+        Uri.parse('https://movejobapp-359e2f13a5e7.herokuapp.com/deliveries'),
       );
 
+      log(response.body);
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        state = state.copyWith(user: data['user'], isLoading: false);
+        final data = jsonDecode(response.body);
+        state = state.copyWith(data: data, isLoading: false);
       } else {
         state = state.copyWith(error: 'Database Error', isLoading: false);
       }
@@ -64,29 +51,93 @@ class DeliveryNotifier extends StateNotifier<DeliveryState> {
     }
   }
 
-  Future<void> register(String email, String password, String name,
-      String surname, String userType) async {
+  Future<void> myDeliveries(String email) async {
+    log(email);
     state = state.copyWith(isLoading: true, error: null);
+
     try {
       final response = await http.post(
-        Uri.parse('https://movejobapp-359e2f13a5e7.herokuapp.com/login'),
+        Uri.parse('https://movejobapp-359e2f13a5e7.herokuapp.com/mydeliveries'),
         body: {
           'email': email,
-          'password': password,
-          'name': name,
-          'surname': surname,
-          'userType': userType,
         },
       );
 
+      log(response.body);
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        state = state.copyWith(user: data['user'], isLoading: false);
+        final data = jsonDecode(response.body);
+        state = state.copyWith(data: data, isLoading: false);
       } else {
         state = state.copyWith(error: 'Database Error', isLoading: false);
       }
     } catch (e) {
+      log(e.toString());
+      state = state.copyWith(error: 'Connection Failed', isLoading: false);
+    }
+  }
+
+  Future<void> addDeliveries(String email, String name, String surname,
+      double lat, double lng, String address, List items) async {
+    log('helelelele');
+    state = state.copyWith(isLoading: true, error: null);
+    log('belelelelebbbbbbbbbbbbb');
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'https://movejobapp-359e2f13a5e7.herokuapp.com/adddeliveries'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'email': email,
+          'name': name,
+          'surname': surname,
+          'lat': lat,
+          'lng': lng,
+          'address': address,
+          'isDelivered': false,
+          'items': items,
+        }),
+      );
+
+      log(response.statusCode.toString());
+
+      log(response.body);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        state = state.copyWith(data: data['data'], isLoading: false);
+      } else {
+        state = state.copyWith(error: 'Database Error', isLoading: false);
+      }
+    } catch (e) {
+      log(e.toString());
       state = state.copyWith(error: 'Connection Failed ', isLoading: false);
+    }
+  }
+
+  Future<void> deliver(int id, int deliverer) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://movejobapp-359e2f13a5e7.herokuapp.com/deliver'),
+        body: {
+          'id': id,
+          'isDelivered': true,
+          'deliverer': deliverer,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        state = state.copyWith(data: data['data'], isLoading: false);
+      } else {
+        state = state.copyWith(error: 'Database Error', isLoading: false);
+      }
+    } catch (e) {
+      state = state.copyWith(error: 'Connection Failed', isLoading: false);
     }
   }
 

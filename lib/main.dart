@@ -4,15 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
-import 'package:move_job/Data/Database.dart';
 import 'package:move_job/Data/LocalDatabase.dart';
-import 'package:move_job/Data/LocationFetch.dart';
 import 'package:move_job/Data/UserState.dart';
 import 'package:move_job/Routes/Routes.dart';
 import 'package:move_job/Widgets/AuthWidgets/AuthPage.dart';
 import 'package:move_job/Widgets/MainWidgets/MainPage.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:workmanager/workmanager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +23,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  Workmanager().initialize(
+  /*Workmanager().initialize(
     callbackDispatcher,
     isInDebugMode: true,
   );
@@ -34,13 +31,13 @@ void main() async {
     "1",
     "locationTask",
     frequency: Duration(minutes: 15),
-  );
+  );*/
 
   Hive.init((await getApplicationDocumentsDirectory()).path);
 
   await Hive.openBox('User');
 
-  userState = userState.copyWith(user: await LocalDatabase().userGetInfos());
+  userData = await LocalDatabase().userGetInfos();
 
   runApp(const ProviderScope(child: MainApp()));
 }
@@ -48,9 +45,9 @@ void main() async {
 late double screenHeight;
 late double screenWidth;
 
-UserState userState = UserState();
+late UserState userState;
 
-late Map? userInfo;
+Map? userData;
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
@@ -77,8 +74,6 @@ class MainApp extends StatelessWidget {
   }
 }
 
-final activityProvider = Database().login();
-
 class Home extends ConsumerWidget {
   const Home({super.key});
 
@@ -88,11 +83,13 @@ class Home extends ConsumerWidget {
       body: Center(
         child: Consumer(
           builder: (context, ref, _) {
-            final userState = ref.watch(userProvider);
+            userState = ref.watch(userProvider);
+
+            userState = UserState().copyWith(user: userData, isLoading: false);
 
             return Scaffold(
               body: Center(
-                child: userState.user != null ? MainPage() : MainPage(),
+                child: userState.user != null ? MainPage() : AuthPage(),
               ),
             );
           },

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:move_job/Data/LocalDatabase.dart';
+import 'package:move_job/main.dart';
 
 final userProvider = StateNotifierProvider<UserNotifier, UserState>((ref) {
   return UserNotifier();
@@ -35,18 +36,7 @@ class UserState {
 }
 
 class UserNotifier extends StateNotifier<UserState> {
-  UserNotifier() : super(UserState(isLoading: true)) {
-    loadUser();
-  }
-
-  Future<void> loadUser() async {
-    try {
-      var user = await LocalDatabase().userGetInfos();
-      state = state.copyWith(user: user, isLoading: false);
-    } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
-    }
-  }
+  UserNotifier() : super(UserState(isLoading: false));
 
   Future<void> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
@@ -64,6 +54,8 @@ class UserNotifier extends StateNotifier<UserState> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)['data'];
         state = state.copyWith(user: data, isLoading: false);
+        userData = data;
+        LocalDatabase().userInsertDB(data);
       } else {
         state = state.copyWith(error: 'Login failed', isLoading: false);
       }
@@ -87,20 +79,20 @@ class UserNotifier extends StateNotifier<UserState> {
         },
       );
 
-      log(response.body);
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)['user'];
         state = state.copyWith(user: data, isLoading: false);
       } else {
-        state = state.copyWith(error: 'Login failed', isLoading: false);
+        state = state.copyWith(error: 'Registration failed', isLoading: false);
       }
     } catch (e) {
       state = state.copyWith(error: 'Connection failed', isLoading: false);
     }
   }
 
-  void logout() {
-    state = UserState();
+  Future<void> logout() async {
+    await LocalDatabase().userDeleteDB();
+    userData = null;
+    userState = state.copyWith(user: null);
   }
 }

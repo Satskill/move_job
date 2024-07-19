@@ -44,10 +44,10 @@ class DeliveryNotifier extends StateNotifier<DeliveryState> {
         final data = jsonDecode(response.body);
         state = state.copyWith(data: data, isLoading: false);
       } else {
-        state = state.copyWith(error: 'Database Error', isLoading: false);
+        state = state.copyWith(error: 'Veri Tabanı Hatası', isLoading: false);
       }
     } catch (e) {
-      state = state.copyWith(error: 'Connection Failed', isLoading: false);
+      state = state.copyWith(error: 'Bağlantı Hatası', isLoading: false);
     }
   }
 
@@ -69,11 +69,11 @@ class DeliveryNotifier extends StateNotifier<DeliveryState> {
         final data = jsonDecode(response.body);
         state = state.copyWith(data: data, isLoading: false);
       } else {
-        state = state.copyWith(error: 'Database Error', isLoading: false);
+        state = state.copyWith(error: 'Veri Tabanı Hatası', isLoading: false);
       }
     } catch (e) {
       log(e.toString());
-      state = state.copyWith(error: 'Connection Failed', isLoading: false);
+      state = state.copyWith(error: 'Bağlantı Hatası', isLoading: false);
     }
   }
 
@@ -101,7 +101,33 @@ class DeliveryNotifier extends StateNotifier<DeliveryState> {
         }),
       );
 
-      log(response.statusCode.toString());
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        state = state.copyWith(data: data['deliveries'], isLoading: false);
+      } else {
+        state = state.copyWith(error: 'Veri Tabanı Hatası', isLoading: false);
+      }
+    } catch (e) {
+      log(e.toString());
+      state = state.copyWith(error: 'Bağlantı Hatası', isLoading: false);
+    }
+  }
+
+  Future<void> deliver(int id, int deliverer) async {
+    log('bbbbbbbbbbbbbbbbbbbbbbb');
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://movejobapp-359e2f13a5e7.herokuapp.com/deliver'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'id': id,
+          'isDelivered': true,
+          'deliverer': deliverer,
+        }),
+      );
 
       log(response.body);
 
@@ -109,35 +135,10 @@ class DeliveryNotifier extends StateNotifier<DeliveryState> {
         final data = jsonDecode(response.body);
         state = state.copyWith(data: data['data'], isLoading: false);
       } else {
-        state = state.copyWith(error: 'Database Error', isLoading: false);
+        state = state.copyWith(error: 'Veri Tabanı Hatası', isLoading: false);
       }
     } catch (e) {
-      log(e.toString());
-      state = state.copyWith(error: 'Connection Failed ', isLoading: false);
-    }
-  }
-
-  Future<void> deliver(int id, int deliverer) async {
-    state = state.copyWith(isLoading: true, error: null);
-
-    try {
-      final response = await http.post(
-        Uri.parse('https://movejobapp-359e2f13a5e7.herokuapp.com/deliver'),
-        body: {
-          'id': id,
-          'isDelivered': true,
-          'deliverer': deliverer,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        state = state.copyWith(data: data['data'], isLoading: false);
-      } else {
-        state = state.copyWith(error: 'Database Error', isLoading: false);
-      }
-    } catch (e) {
-      state = state.copyWith(error: 'Connection Failed', isLoading: false);
+      state = state.copyWith(error: 'Bağlantı Hatası', isLoading: false);
     }
   }
 

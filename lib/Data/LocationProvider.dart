@@ -1,15 +1,39 @@
-import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:move_job/Widgets/CustomWidgets/Messages.dart';
-import 'package:workmanager/workmanager.dart';
+import 'dart:async';
 
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    return Future.value(true);
-  });
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:move_job/Widgets/CustomWidgets/Messages.dart';
+
+class LocationNotifier extends StateNotifier<LatLng> {
+  LocationNotifier() : super(LatLng(38.41, 27.12)) {
+    _startTracking();
+  }
+
+  StreamSubscription<Position>? _positionStream;
+
+  void _startTracking() {
+    _positionStream = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10,
+      ),
+    ).listen((Position position) {
+      state = LatLng(position.latitude, position.longitude);
+    });
+  }
+
+  @override
+  void dispose() {
+    _positionStream?.cancel();
+    super.dispose();
+  }
 }
+
+final locationProvider = StateNotifierProvider<LocationNotifier, LatLng>((ref) {
+  return LocationNotifier();
+});
 
 Future<Position?> requestLocationPermission(BuildContext context) async {
   LocationPermission permissions = await Geolocator.requestPermission();

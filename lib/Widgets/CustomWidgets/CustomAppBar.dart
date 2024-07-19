@@ -12,7 +12,7 @@ class CustomAppBar {
           bottomRight: Radius.circular(12),
         ),
       ),
-      backgroundColor: Variables.generalRed.withOpacity(0.8),
+      backgroundColor: Variables.appBarColor.withOpacity(0.8),
       automaticallyImplyLeading: false,
       centerTitle: true,
       scrolledUnderElevation: 0,
@@ -35,7 +35,7 @@ class CustomAppBar {
           bottomRight: Radius.circular(12),
         ),
       ),
-      backgroundColor: Variables.generalRed.withOpacity(0.8),
+      backgroundColor: Variables.appBarColor.withOpacity(0.8),
       automaticallyImplyLeading: false,
       centerTitle: true,
       scrolledUnderElevation: 0,
@@ -58,6 +58,38 @@ class CustomAppBar {
           ),
         ),
       ],
+    );
+  }
+
+  goBackAppBar(String title, Function requiredFunction) {
+    return AppBar(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(12),
+          bottomRight: Radius.circular(12),
+        ),
+      ),
+      backgroundColor: Variables.appBarColor.withOpacity(0.8),
+      automaticallyImplyLeading: false,
+      centerTitle: true,
+      scrolledUnderElevation: 0,
+      title: Text(
+        title,
+        style: GoogleFonts.openSans(
+          fontSize: screenWidth * 0.04,
+          fontWeight: FontWeight.w500,
+          color: Variables.whiteBG,
+        ),
+      ),
+      leading: IconButton(
+        onPressed: () {
+          requiredFunction();
+        },
+        icon: const Icon(
+          Icons.arrow_back_ios,
+          color: Colors.white,
+        ),
+      ),
     );
   }
 }

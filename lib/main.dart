@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:move_job/Data/LocalDatabase.dart';
 import 'package:move_job/Data/UserState.dart';
 import 'package:move_job/Routes/Routes.dart';
 import 'package:move_job/Widgets/AuthWidgets/AuthPage.dart';
+import 'package:move_job/Widgets/Introductions/IntroductionPage.dart';
 import 'package:move_job/Widgets/MainWidgets/MainPage.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -47,7 +49,21 @@ late double screenWidth;
 
 late UserState userState;
 
+late Widget? myWidget;
+
 Map? userData;
+
+final startWidget = StateNotifierProvider<StartWidgetNotifier, Widget?>((ref) {
+  return StartWidgetNotifier();
+});
+
+class StartWidgetNotifier extends StateNotifier<Widget?> {
+  StartWidgetNotifier() : super(const IntroductionPage());
+
+  void updateWidget(Widget? newWidget) {
+    state = newWidget;
+  }
+}
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
@@ -86,6 +102,14 @@ class Home extends ConsumerWidget {
             userState = ref.watch(userProvider);
 
             userState = UserState().copyWith(user: userData, isLoading: false);
+
+            myWidget = ref.watch(startWidget);
+
+            log(myWidget.toString());
+
+            if (myWidget != null) {
+              return myWidget!;
+            }
 
             return Scaffold(
               body: Center(

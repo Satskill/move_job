@@ -6,7 +6,6 @@ import 'package:move_job/Data/Variables.dart';
 import 'package:move_job/Widgets/AuthWidgets/AuthPage.dart';
 import 'package:move_job/Widgets/AuthWidgets/CustomPaint.dart';
 import 'package:move_job/Widgets/AuthWidgets/LogIn/LoginPage.dart';
-import 'package:move_job/Widgets/CustomWidgets/CustomAppBar.dart';
 import 'package:move_job/Widgets/CustomWidgets/CustomButtons.dart';
 import 'package:move_job/Widgets/CustomWidgets/CustomTextFields.dart';
 import 'package:move_job/main.dart';
@@ -28,7 +27,6 @@ class RegisterPage extends ConsumerWidget {
     final radioNotifier = ref.read(radioProvider.notifier);
 
     return Scaffold(
-      appBar: CustomAppBar().authAppBar('Kayıt Ol'),
       extendBodyBehindAppBar: true,
       body: CustomPaint(
         painter: DottedBackgroundPainter(),
@@ -48,6 +46,14 @@ class RegisterPage extends ConsumerWidget {
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
+                            Text(
+                              'Kayıt Ol',
+                              style: GoogleFonts.openSans(
+                                fontSize: screenWidth * 0.044,
+                                fontWeight: FontWeight.w500,
+                                color: Variables.generalRed,
+                              ),
+                            ),
                             if (userState.error != null)
                               Text(
                                 userState.error!,
@@ -104,14 +110,13 @@ class RegisterPage extends ConsumerWidget {
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
-                                        CustomTextFields().withIcon(
-                                          Icons.visibility,
+                                        CustomTextFields().withOutIcon(
                                           textFieldController[1],
                                           textFieldFocus[1],
                                           screenWidth * 0.9,
+                                          screenWidth * 0.15,
                                           () {},
                                           hint: 'Şifre',
-                                          height: screenWidth * 0.15,
                                         ),
                                       ],
                                     ),

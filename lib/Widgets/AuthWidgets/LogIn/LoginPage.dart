@@ -6,7 +6,6 @@ import 'package:move_job/Data/Variables.dart';
 import 'package:move_job/Widgets/AuthWidgets/AuthPage.dart';
 import 'package:move_job/Widgets/AuthWidgets/CustomPaint.dart';
 import 'package:move_job/Widgets/AuthWidgets/Register/RegisterPage.dart';
-import 'package:move_job/Widgets/CustomWidgets/CustomAppBar.dart';
 import 'package:move_job/Widgets/CustomWidgets/CustomButtons.dart';
 import 'package:move_job/Widgets/CustomWidgets/CustomTextFields.dart';
 import 'package:move_job/main.dart';
@@ -24,7 +23,6 @@ class LoginPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: CustomAppBar().authAppBar('Giriş Yap'),
       extendBodyBehindAppBar: true,
       body: CustomPaint(
         painter: DottedBackgroundPainter(),
@@ -43,6 +41,14 @@ class LoginPage extends ConsumerWidget {
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
+                          Text(
+                            'Giriş Yap',
+                            style: GoogleFonts.openSans(
+                              fontSize: screenWidth * 0.044,
+                              fontWeight: FontWeight.w500,
+                              color: Variables.generalRed,
+                            ),
+                          ),
                           if (userState.error != null)
                             Text(
                               userState.error!,
@@ -99,14 +105,13 @@ class LoginPage extends ConsumerWidget {
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                      CustomTextFields().withIcon(
-                                        Icons.visibility,
+                                      CustomTextFields().withOutIcon(
                                         textFieldController[1],
                                         textFieldFocus[1],
                                         screenWidth * 0.9,
+                                        screenWidth * 0.15,
                                         () {},
                                         hint: 'Şifre',
-                                        height: screenWidth * 0.15,
                                       ),
                                     ],
                                   ),

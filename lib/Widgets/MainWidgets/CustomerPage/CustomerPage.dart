@@ -4,7 +4,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:move_job/Data/DeliveryState.dart';
-import 'package:move_job/Data/LocationFetch.dart';
+import 'package:move_job/Data/LocationProvider.dart';
 import 'package:move_job/Data/UserState.dart';
 import 'package:move_job/Data/Variables.dart';
 import 'package:move_job/Widgets/CustomWidgets/CustomAppBar.dart';
@@ -48,7 +48,7 @@ class _CustomerPageState extends ConsumerState<CustomerPage> {
               userState.user?['surname'],
               position.latitude,
               position.longitude,
-              '${placeMarks.first.subLocality}/${placeMarks.first.locality}/${placeMarks.first.thoroughfare}',
+              '${placeMarks.first.subLocality} ${placeMarks.first.locality} ${placeMarks.first.thoroughfare}',
               [
                 {
                   'name': 'Kargo',
@@ -162,11 +162,20 @@ class _CustomerPageState extends ConsumerState<CustomerPage> {
                                         ],
                                       ),
                                       GestureDetector(
-                                        onTap: () {
+                                        onTap: () async {
                                           Navigator.pushNamed(
-                                              context, '/QRPage',
-                                              arguments:
-                                                  deliveryState.data![index]);
+                                                  context, '/QRPage',
+                                                  arguments: deliveryState
+                                                      .data![index])
+                                              .whenComplete(
+                                            () {
+                                              ref
+                                                  .read(
+                                                      deliveryProvider.notifier)
+                                                  .myDeliveries(
+                                                      userState.user!['email']);
+                                            },
+                                          );
                                         },
                                         child: SizedBox(
                                           height: screenWidth * 0.15,

@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:move_job/Data/DeliveryState.dart';
 import 'package:move_job/Widgets/CustomWidgets/CustomAppBar.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -39,7 +41,9 @@ class _QRPageState extends ConsumerState<QRPage> {
     final qrNotifier = ref.read(qrProvider.notifier);
 
     return Scaffold(
-      appBar: CustomAppBar().authAppBar('QR Oku'),
+      appBar: CustomAppBar().goBackAppBar('QR Oku', () {
+        Navigator.pop(context);
+      }),
       extendBodyBehindAppBar: true,
       body: qrState.isLoading
           ? const Center(
@@ -47,8 +51,16 @@ class _QRPageState extends ConsumerState<QRPage> {
             )
           : QRView(
               key: qrKey,
-              onQRViewCreated: (controller) =>
-                  _onQRViewCreated(controller, qrNotifier),
+              onQRViewCreated: (controller) {
+                _onQRViewCreated(controller, qrNotifier);
+              },
+              overlay: QrScannerOverlayShape(
+                borderColor: Colors.red,
+                borderRadius: 10,
+                borderLength: 30,
+                borderWidth: 10,
+                cutOutSize: 300,
+              ),
             ),
     );
   }
@@ -56,9 +68,15 @@ class _QRPageState extends ConsumerState<QRPage> {
   void _onQRViewCreated(QRViewController controller, QRNotifier qrNotifier) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) async {
-      final String reservationId =
-          jsonDecode(scanData.code.toString())['rezervasyon_id'].toString();
-      await qrNotifier.acceptQR(context, reservationId);
+      final int deliverer = jsonDecode(scanData.code.toString());
+
+      controller.pauseCamera();
+
+      qrNotifier.setLoading(true);
+
+      await DeliveryNotifier().deliver(widget.data['id'], deliverer);
+      qrNotifier.setLoading(false);
+      Navigator.pop(context);
     });
   }
 }
@@ -88,9 +106,9 @@ class QRNotifier extends StateNotifier<QRState> {
     state = state.copyWith(result: result);
   }
 
-  Future<void> acceptQR(BuildContext context, String reservationId) async {
+  Future<void> acceptQR(BuildContext context) async {
     setLoading(true);
-    //await Database().acceptQR(context, reservationId);
+
     setLoading(false);
   }
 }

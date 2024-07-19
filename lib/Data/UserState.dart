@@ -82,6 +82,8 @@ class UserNotifier extends StateNotifier<UserState> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)['user'];
         state = state.copyWith(user: data, isLoading: false);
+        userData = data;
+        LocalDatabase().userInsertDB(data);
       } else {
         state = state.copyWith(error: 'Registration failed', isLoading: false);
       }
@@ -93,6 +95,6 @@ class UserNotifier extends StateNotifier<UserState> {
   Future<void> logout() async {
     await LocalDatabase().userDeleteDB();
     userData = null;
-    userState = state.copyWith(user: null);
+    state = state.copyWith(user: null);
   }
 }
